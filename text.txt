@@ -1,0 +1,571 @@
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+
+const RoleBaseLead = () => {
+  const [leads, setLeads] = useState([]);
+  const [users, setUsers] = useState([]);
+  const [executivesUnderAdmin, setExecutivesUnderAdmin] = useState([]);
+  const [adminView, setAdminView] = useState("myLeads"); // 'myLeads' or 'executiveLeads'
+  const [currentUser, setCurrentUser] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const userId = localStorage.getItem("userId");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [newComment, setNewComment] = useState("");
+  const [leadData, setLeadData] = useState({
+    name: "",
+    contact: "",
+    address: "",
+    description: "",
+    progress: "",
+    payment: "",
+    balPayment: "",
+    comment: "",
+    date: "",
+    assignedTo: "" | userId
+  });
+  const [editingLead, setEditingLead] = useState(null);
+  const [isCreatingLead, setIsCreatingLead] = useState(false);
+  const [selectedProgress, setSelectedProgress] = useState("");
+
+  useEffect(() => {
+    if (!leadData.assignedTo) {
+      setLeadData((prevData) => ({ ...prevData, assignedTo: userId }));
+    }
+  }, [userId]);  // Runs when `userId` changes
+
+  // Function to format date to YYYY-MM-DDT00:00:00.000Z
+  const formatDateToISO = (date) => {
+    return new Date(date).toISOString();
+  };
+
+  const createLead = async (e) => {
+    e.preventDefault();
+    setError("");
+
+    try {
+      const leadPayload = {
+        ...leadData,
+        assignedTo: leadData.assignedTo || null, // Ensure null instead of empty string
+      };
+
+      await axios.post("http://localhost:5000/api/leads", leadPayload);
+      setLeadData({ name: "", contact: "", progress: "", payment: "", balPayment: "", assignedTo: "", address: "", description: "", comment: "", date: "", });
+      fetchLeads();
+      setIsCreatingLead(false);
+    } catch (error) {
+      setError("Error creating lead");
+      console.error("Error creating lead", error);
+    }
+  };
+
+  const updateLead = async (id) => {
+    setError("");
+    try {
+      const leadPayload = {
+        ...leadData,
+        assignedTo: leadData.assignedTo || null, // Ensure null instead of empty string
+      };
+
+      await axios.put(`http://localhost:5000/api/leads/${id}`, leadPayload);
+      setEditingLead(null);
+      setLeadData({ name: "", contact: "", progress: "", payment: "", balPayment: "", assignedTo: "", address: "", description: "", comment: "", date: "", });
+      fetchLeads();
+    } catch (error) {
+      setError("Error updating lead");
+      console.error("Error updating lead", error);
+    }
+  };
+
+  const deleteLead = async (id) => {
+    setError("");
+    try {
+      await axios.delete(`http://localhost:5000/api/leads/${id}`);
+      fetchLeads();
+    } catch (error) {
+      setError("Error deleting lead");
+      console.error("Error deleting lead", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  // 🔹 TEMP HARD-CODED ADMIN ID (Replace with actual logic)
+  const adminId = userId; // Example Admin ID (Indresh)
+
+  useEffect(() => {
+    // fetchLeads();
+    fetchUsers();
+  }, []);
+
+  // Fetch leads from API
+  const fetchLeads = async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const params = { adminId };
+      if (startDate) params.startDate = formatDateToISO(startDate);
+      if (endDate) params.endDate = formatDateToISO(endDate);
+
+      console.log("Fetching with Params:", params); // Debugging
+
+      const res = await axios.get("http://localhost:5000/api/leads", { params });
+
+      console.log("API Response:", res.data); // Debugging
+      setLeads(res.data);
+    } catch (error) {
+      setError("Failed to fetch leads");
+      console.error("Error fetching leads:", error);
+    }
+    setLoading(false);
+  };
+
+  // Fetch leads when dates change
+  // Fetch all leads on first load
+  useEffect(() => {
+    fetchLeads(startDate, endDate);
+  }, [startDate, endDate]);
+
+  const fetchUsers = async () => {
+    try {
+      const res = await axios.get("http://localhost:5000/api/users");
+      setUsers(res.data);
+      // ✅ Find logged-in user details
+      const loggedInUser = res.data.find(user => user._id === userId);
+      setCurrentUser(loggedInUser);
+
+      // ✅ Find executives under this admin
+      const filteredExecutives = res.data.filter(user => user.parent?._id === userId);
+      setExecutivesUnderAdmin(filteredExecutives.map(exec => exec._id));
+    } catch (error) {
+      console.error("Error fetching users", error);
+    }
+  };
+
+  const filterLeads = () => {
+    let filtered = leads;
+
+    if (adminView === "myLeads") {
+      filtered = leads.filter(lead => lead.assignedTo?._id === adminId);
+    }
+    if (adminView === "executiveLeads") {
+      filtered = leads.filter(lead => executivesUnderAdmin.includes(lead.assignedTo?._id));
+    }
+    if (selectedProgress) {
+      filtered = filtered.filter(lead => lead.progress === selectedProgress);
+    }
+
+    return filtered;
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    // Append new comment properly
+    const updatedComment = leadData.comment
+      ? `${leadData.comment}\n${newComment}` // Append new comment
+      : newComment;
+
+    // Update the state
+    const updatedLeadData = { ...leadData, comment: updatedComment };
+    setLeadData(updatedLeadData);
+
+    // Call the appropriate function
+    if (editingLead) {
+      updateLead(editingLead);
+    } else {
+      createLead(e, updatedLeadData);
+    }
+
+    // Clear new comment field
+    setNewComment("");
+  };
+
+  return (
+    <div>
+      <h1 className="text-xl font-bold">Lead Management</h1>
+
+      <div className="mb-3 flex gap-4">
+        <button
+          className={`border p-2 rounded ${adminView === "myLeads" ? "bg-blue-500 text-white" : ""}`}
+          onClick={() => setAdminView("myLeads")}
+        >
+          View My Leads
+        </button>
+
+        {currentUser?.role !== "Executive" && (
+          <button
+            className={`border p-2 rounded ${adminView === "executiveLeads" ? "bg-green-500 text-white" : ""
+              }`}
+            onClick={() => setAdminView("executiveLeads")}
+          >
+            View My Executives' Leads
+          </button>
+        )}
+      </div>
+
+      <input
+        type="date"
+        value={startDate}
+        onChange={(e) => setStartDate(e.target.value)}
+      />
+
+      <label>End Date:</label>
+      <input
+        type="date"
+        value={endDate}
+        onChange={(e) => setEndDate(e.target.value)}
+      />
+
+      <button onClick={() => fetchLeads(startDate, endDate)}>Filter</button>
+
+      <div className="mb-3">
+        <label>Progress:</label>
+        <select
+          className="form-select"
+          value={selectedProgress}
+          onChange={(e) => setSelectedProgress(e.target.value)}
+        >
+          <option value="">All</option>
+          <option value="new lead">New Lead</option>
+          <option value="follow up">Follow Up</option>
+          <option value="converted">Converted</option>
+        </select>
+      </div>
+
+      <div className="container mt-4">
+        <h2 className="mb-4">Lead Management</h2>
+        {error && <div className="alert alert-danger">{error}</div>}
+
+        {/* Form to View/Edit Leads */}
+        {!isCreatingLead && (
+          <form
+            className="mb-4"
+            onSubmit={handleSubmit}
+          >
+            <div className="row g-3">
+              <div className="col-md-4">
+                <input
+                  type="text"
+                  className="form-control"
+                  placeholder="Lead Name"
+                  value={leadData.name}
+                  onChange={(e) => setLeadData({ ...leadData, name: e.target.value })}
+                  disabled={currentUser?.role !== "Admin" && currentUser?.role !== "Super Admin" && !isCreatingLead}
+                  required
+                />
+              </div>
+              <div className="col-md-4">
+                <input
+                  type="text"
+                  className="form-control"
+                  placeholder="Contact"
+                  value={leadData.contact}
+                  onChange={(e) => setLeadData({ ...leadData, contact: e.target.value })}
+                  disabled={currentUser?.role !== "Admin" && currentUser?.role !== "Super Admin" && !isCreatingLead}
+                  required
+                />
+              </div>
+              <div className="col-md-4">
+                <input
+                  type="text"
+                  className="form-control"
+                  placeholder="Address"
+                  value={leadData.address}
+                  onChange={(e) => setLeadData({ ...leadData, address: e.target.value })}
+                  disabled={currentUser?.role !== "Admin" && currentUser?.role !== "Super Admin" && !isCreatingLead}
+                  required
+                />
+              </div>
+              <div className="col-md-4">
+                <input
+                  type="text"
+                  className="form-control"
+                  placeholder="Description"
+                  value={leadData.description}
+                  onChange={(e) => setLeadData({ ...leadData, description: e.target.value })}
+                  disabled={currentUser?.role !== "Admin" && currentUser?.role !== "Super Admin" && !isCreatingLead}
+                  required
+                />
+              </div>
+              <div className="col-md-4">
+                <select
+                  className="form-control"
+                  value={leadData.progress}
+                  onChange={(e) => setLeadData({ ...leadData, progress: e.target.value })}
+                  required
+                >
+                  <option value="new lead">New Lead</option>
+                  <option value="follow up">Follow Up</option>
+                  <option value="converted">Converted</option>
+                </select>
+              </div>
+              <div className="col-md-4">
+                <input
+                  type="date"
+                  className="form-control"
+                  value={leadData.date}
+                  onChange={(e) => setLeadData({ ...leadData, date: e.target.value })}
+                  required
+                />
+              </div>
+              <div className="col-md-4">
+                <textarea
+                  className="form-control"
+                  value={leadData.comment}
+                  onChange={(e) => setLeadData({ ...leadData, comment: e.target.value })}
+                  placeholder="Comments"
+                  required
+                />
+              </div>
+              <div className="col-md-4">
+                <input
+                  type="number"
+                  className="form-control"
+                  placeholder="Payment"
+                  value={leadData.payment}
+                  onChange={(e) => setLeadData({ ...leadData, payment: e.target.value })}
+                  disabled={currentUser?.role !== "Admin" && currentUser?.role !== "Super Admin" && !isCreatingLead}
+                  required
+                />
+              </div>
+              <div className="col-md-4">
+                <input
+                  type="number"
+                  className="form-control"
+                  placeholder="Received Payment"
+                  value={leadData.balPayment}
+                  onChange={(e) => setLeadData({ ...leadData, balPayment: e.target.value })}
+                  required
+                />
+              </div>
+              <div className="col-md-4">
+                <select
+                  className="form-select"
+                  value={leadData.assignedTo}  // Now it has the correct default value
+                  onChange={(e) => setLeadData({ ...leadData, assignedTo: e.target.value })}
+                  required
+                  disabled={currentUser?.role === "Subadmin" || currentUser?.role === "Executive"}
+                >
+                  <option value={userId}>{currentUser?.name} (Self)</option>
+                  {currentUser?.role !== "Subadmin" && currentUser?.role !== "Executive" &&
+                    users
+                      .filter(user => user._id !== userId)  // Prevent self-selection twice
+                      .map(user => (
+                        <option key={user._id} value={user._id}>
+                          {user.name} ({user.role})
+                        </option>
+                      ))
+                  }
+                </select>
+              </div>
+            </div>
+            <button type="submit" className="btn btn-primary mt-3">
+              {editingLead ? "Update Lead" : "Create Lead"}
+            </button>
+          </form>
+        )}
+
+        {/* Form to Create New Leads */}
+        {isCreatingLead && (
+          <form
+            className="mb-4"
+            onSubmit={createLead}
+          >
+            <div className="row g-3">
+              <div className="col-md-4">
+                <input
+                  type="text"
+                  className="form-control"
+                  placeholder="Lead Name"
+                  value={leadData.name}
+                  onChange={(e) => setLeadData({ ...leadData, name: e.target.value })}
+                  required
+                />
+              </div>
+              <div className="col-md-4">
+                <input
+                  type="text"
+                  className="form-control"
+                  placeholder="Contact"
+                  value={leadData.contact}
+                  onChange={(e) => setLeadData({ ...leadData, contact: e.target.value })}
+                  required
+                />
+              </div>
+              <div className="col-md-4">
+                <input
+                  type="text"
+                  className="form-control"
+                  placeholder="Address"
+                  value={leadData.address}
+                  onChange={(e) => setLeadData({ ...leadData, address: e.target.value })}
+                  required
+                />
+              </div>
+              <div className="col-md-4">
+                <input
+                  type="text"
+                  className="form-control"
+                  placeholder="Description"
+                  value={leadData.description}
+                  onChange={(e) => setLeadData({ ...leadData, description: e.target.value })}
+                  required
+                />
+              </div>
+              <div className="col-md-4">
+                <select
+                  className="form-control"
+                  value={leadData.progress}
+                  onChange={(e) => setLeadData({ ...leadData, progress: e.target.value })}
+                  required
+                >
+                  <option value="new lead">New Lead</option>
+                  <option value="follow up">Follow Up</option>
+                  <option value="converted">Converted</option>
+                </select>
+              </div>
+              <div className="col-md-4">
+                <input
+                  type="date"
+                  className="form-control"
+                  value={leadData.date}
+                  onChange={(e) => setLeadData({ ...leadData, date: e.target.value })}
+                  required
+                />
+              </div>
+              <div className="col-md-4">
+                <textarea
+                  className="form-control"
+                  value={leadData.comment}
+                  onChange={(e) => setLeadData({ ...leadData, comment: e.target.value })}
+                  placeholder="Comments"
+                  required
+                />
+              </div>
+              <div className="col-md-4">
+                <input
+                  type="number"
+                  className="form-control"
+                  placeholder="Payment"
+                  value={leadData.payment}
+                  onChange={(e) => setLeadData({ ...leadData, payment: e.target.value })}
+                  required
+                />
+              </div>
+              <div className="col-md-4">
+                <input
+                  type="number"
+                  className="form-control"
+                  placeholder="Received Payment"
+                  value={leadData.balPayment}
+                  onChange={(e) => setLeadData({ ...leadData, balPayment: e.target.value })}
+                  required
+                />
+              </div>
+              <div className="col-md-4">
+                <select
+                  className="form-select"
+                  value={leadData.assignedTo}  // Now it has the correct default value
+                  onChange={(e) => setLeadData({ ...leadData, assignedTo: e.target.value })}
+                  required
+                  disabled
+                >
+                  <option value={userId}>{currentUser?.name} (Self)</option>
+                </select>
+              </div>
+            </div>
+            <button type="submit" className="btn btn-primary mt-3">
+              Create Lead
+            </button>
+          </form>
+        )}
+
+        <button
+          className="btn btn-secondary mt-3"
+          onClick={() => setIsCreatingLead(!isCreatingLead)}
+        >
+          {isCreatingLead ? "Cancel Create Lead" : "Create New Lead"}
+        </button>
+
+        {loading ? (
+          <p>Loading leads...</p>
+        ) : (
+          <table className="table table-striped table-bordered">
+            <thead className="thead-dark">
+              <tr>
+                <th>Name</th>
+                <th>Contact</th>
+                <th>Address</th>
+                <th>Progress</th>
+                <th>Follow Up Date</th>
+                <th>Comments</th>
+                <th>Payment</th>
+                <th>Received</th>
+                <th>Balance Payment</th>
+                <th>Assigned To</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filterLeads().map((lead) => (
+                <tr key={lead._id}>
+                  <td>{lead.name}</td>
+                  <td>{lead.contact}</td>
+                  <td>{lead.address}</td>
+                  <td>{lead.progress}</td>
+                  <td>{lead.date}</td>
+                  <td>
+                    <ul>
+                      {(lead.comment ? lead.comment.split('.') : []).map((sentence, index) =>
+                        sentence.trim() && <li key={index}>{sentence.trim()}.</li>
+                      )}
+                    </ul>
+                  </td>
+                  <td>{lead.payment}</td>
+                  <td>{lead.balPayment}</td>
+                  <td>{lead.payment - lead.balPayment}</td> {/* Balance Payment Calculation */}
+                  <td>{lead.assignedTo?.name || "Unassigned"}</td>
+                  <td>
+                    <button
+                      className="btn btn-warning btn-sm me-2"
+                      onClick={() => {
+                        setEditingLead(lead._id);
+                        setLeadData({
+                          name: lead.name,
+                          contact: lead.contact,
+                          progress: lead.progress,
+                          payment: lead.payment,
+                          balPayment: lead.balPayment,
+                          date: lead.date,
+                          comment: lead.comment, // ✅ Keep existing comments
+                          address: lead.address,
+                          description: lead.description,
+                          assignedTo: lead.assignedTo?._id || "",
+                        });
+                        setIsCreatingLead(false);
+                      }}
+                    >
+                      Edit
+                    </button>
+                    {currentUser?.role !== "Subadmin" && currentUser?.role !== "Executive" && (
+                      <button className="btn btn-danger btn-sm" onClick={() => deleteLead(lead._id)}>
+                        Delete
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
+    </div>
+  )
+}
+
+export default RoleBaseLead;
