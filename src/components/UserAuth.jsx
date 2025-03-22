@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 
-const API_URL = "http://localhost:5000/api/auth"; // Update if needed
+const API_URL = "https://crm.hxbindia.com/api/auth"; // Update if needed
 
 const UserAuth = () => {
   const [formData, setFormData] = useState({

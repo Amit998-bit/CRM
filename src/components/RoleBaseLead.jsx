@@ -73,7 +73,7 @@ const RoleBaseLead = () => {
 
     console.log("Creating lead with data:", leadPayload);  // Debugging log
 
-    await axios.post("http://localhost:5000/api/leads", leadPayload);
+    await axios.post("https://crm.hxbindia.com/api/leads", leadPayload);
 
     setLeadData({
       name: "",
@@ -124,7 +124,7 @@ const RoleBaseLead = () => {
 
       console.log("Updating lead with data:", leadPayload);  // Debugging log
 
-      await axios.put(`http://localhost:5000/api/leads/${id}`, leadPayload);
+      await axios.put(`https://crm.hxbindia.com/api/leads/${id}`, leadPayload);
       setEditingLead(null);
       setLeadData({
         name: "",
@@ -181,7 +181,7 @@ const RoleBaseLead = () => {
       if (startDate) params.startDate = formatDateToISO(startDate);
       if (endDate) params.endDate = formatDateToISO(endDate);
 
-      const res = await axios.get("http://localhost:5000/api/leads", { params });
+      const res = await axios.get("https://crm.hxbindia.com/api/leads", { params });
       setLeads(res.data);
     } catch (error) {
       setError("Failed to fetch leads");
@@ -196,7 +196,7 @@ const RoleBaseLead = () => {
 
   const fetchUsers = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/users");
+      const res = await axios.get("https://crm.hxbindia.com/api/users");
       setUsers(res.data);
       const loggedInUser = res.data.find(user => user._id === userId);
       setCurrentUser(loggedInUser);
@@ -267,7 +267,7 @@ const RoleBaseLead = () => {
     formData.append("assignTo", assignto); // Append the assignTo value
   
     try {
-      const response = await axios.post("http://localhost:5000/api/leads/upload", formData, {
+      const response = await axios.post("https://crm.hxbindia.com/api/leads/upload", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },

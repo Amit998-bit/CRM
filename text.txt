@@ -50,7 +50,7 @@ const RoleBaseLead = () => {
         assignedTo: leadData.assignedTo || null, // Ensure null instead of empty string
       };
 
-      await axios.post("http://localhost:5000/api/leads", leadPayload);
+      await axios.post("https://crm.hxbindia.com/api/leads", leadPayload);
       setLeadData({ name: "", contact: "", progress: "", payment: "", balPayment: "", assignedTo: "", address: "", description: "", comment: "", date: "", });
       fetchLeads();
       setIsCreatingLead(false);
@@ -68,7 +68,7 @@ const RoleBaseLead = () => {
         assignedTo: leadData.assignedTo || null, // Ensure null instead of empty string
       };
 
-      await axios.put(`http://localhost:5000/api/leads/${id}`, leadPayload);
+      await axios.put(`https://crm.hxbindia.com/api/leads/${id}`, leadPayload);
       setEditingLead(null);
       setLeadData({ name: "", contact: "", progress: "", payment: "", balPayment: "", assignedTo: "", address: "", description: "", comment: "", date: "", });
       fetchLeads();
@@ -81,7 +81,7 @@ const RoleBaseLead = () => {
   const deleteLead = async (id) => {
     setError("");
     try {
-      await axios.delete(`http://localhost:5000/api/leads/${id}`);
+      await axios.delete(`https://crm.hxbindia.com/api/leads/${id}`);
       fetchLeads();
     } catch (error) {
       setError("Error deleting lead");
@@ -113,7 +113,7 @@ const RoleBaseLead = () => {
 
       console.log("Fetching with Params:", params); // Debugging
 
-      const res = await axios.get("http://localhost:5000/api/leads", { params });
+      const res = await axios.get("https://crm.hxbindia.com/api/leads", { params });
 
       console.log("API Response:", res.data); // Debugging
       setLeads(res.data);
@@ -132,7 +132,7 @@ const RoleBaseLead = () => {
 
   const fetchUsers = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/users");
+      const res = await axios.get("https://crm.hxbindia.com/api/users");
       setUsers(res.data);
       // ✅ Find logged-in user details
       const loggedInUser = res.data.find(user => user._id === userId);

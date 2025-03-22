@@ -13,7 +13,7 @@ const Login = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const res = await axios.post('http://localhost:5000/api/auth/login', credentials);
+            const res = await axios.post('https://crm.hxbindia.com/api/auth/login', credentials);
             localStorage.setItem('token', res.data.token);
             localStorage.setItem('role', res.data.role);
             navigate('/leads');

@@ -34,7 +34,7 @@ const LeadForm = () => {
 
   useEffect(() => {
     // Fetch users to populate the "Assigned To" dropdown
-    fetch('http://localhost:5000/api/users')
+    fetch('https://crm.hxbindia.com/api/users')
       .then(response => response.json())
       .then(data => setUsers(data))
       .catch(error => console.error('Error fetching users:', error));
@@ -78,7 +78,7 @@ const LeadForm = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    fetch('http://localhost:5000/api/leads', {
+    fetch('https://crm.hxbindia.com/api/leads', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

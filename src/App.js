@@ -47,7 +47,7 @@ const App = () => {
   const fetchUsers = async () => {
     setError("");
     try {
-      const res = await axios.get("http://localhost:5000/api/users");
+      const res = await axios.get("https://crm.hxbindia.com/api/users");
       setUsers(res.data);
     } catch (error) {
       setError("Error fetching users");

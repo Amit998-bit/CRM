@@ -30,7 +30,7 @@ const LeadManagement = () => {
     setLoading(true);
     setError("");
     try {
-      const res = await axios.get("http://localhost:5000/api/leads");
+      const res = await axios.get("https://crm.hxbindia.com/api/leads");
       setLeads(res.data);
     } catch (error) {
       setError("Error fetching leads");
@@ -42,7 +42,7 @@ const LeadManagement = () => {
 
   const fetchUsers = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/users");
+      const res = await axios.get("https://crm.hxbindia.com/api/users");
       setUsers(res.data);
     } catch (error) {
       console.error("Error fetching users", error);
@@ -53,7 +53,7 @@ const LeadManagement = () => {
     e.preventDefault();
     setError("");
     try {
-      await axios.post("http://localhost:5000/api/leads", leadData);
+      await axios.post("https://crm.hxbindia.com/api/leads", leadData);
       setLeadData({
         name: "",
         contact: "",
@@ -76,7 +76,7 @@ const LeadManagement = () => {
   const updateLead = async (id) => {
     setError("");
     try {
-      await axios.put(`http://localhost:5000/api/leads/${id}`, leadData);
+      await axios.put(`https://crm.hxbindia.com/api/leads/${id}`, leadData);
       setEditingLead(null);
       setLeadData({
         name: "",
@@ -100,7 +100,7 @@ const LeadManagement = () => {
   const deleteLead = async (id) => {
     setError("");
     try {
-      await axios.delete(`http://localhost:5000/api/leads/${id}`);
+      await axios.delete(`https://crm.hxbindia.com/api/leads/${id}`);
       fetchLeads();
     } catch (error) {
       setError("Error deleting lead");

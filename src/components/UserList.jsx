@@ -10,14 +10,14 @@ const LeadsList = () => {
 
   useEffect(() => {
     // Fetch leads from the API
-    axios.get("http://localhost:5000/api/leads")
+    axios.get("https://crm.hxbindia.com/api/leads")
       .then(response => {
         filterLeads(response.data);
       })
       .catch(error => console.error("Error fetching leads:", error));
 
     // Fetch users to identify Executives and SubAdmins
-    axios.get("http://localhost:5000/api/users")
+    axios.get("https://crm.hxbindia.com/api/users")
       .then(response => {
         setUsers(response.data);
       })

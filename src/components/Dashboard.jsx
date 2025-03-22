@@ -16,7 +16,7 @@ const Dashboard = () => {
       }
 
       try {
-        const res = await axios.get("http://localhost:5000/api/auth/me", {
+        const res = await axios.get("https://crm.hxbindia.com/api/auth/me", {
           headers: { Authorization: token },
         });
         setUser(res.data.user);
@@ -33,7 +33,7 @@ const Dashboard = () => {
     const fetchLeads = async () => {
       const token = localStorage.getItem("token");
       try {
-        const res = await axios.get("http://localhost:5000/api/leads", {
+        const res = await axios.get("https://crm.hxbindia.com/api/leads", {
           headers: { Authorization: token },
         });
         setLeads(res.data);

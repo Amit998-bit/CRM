@@ -85,7 +85,7 @@ const LeadFilterComponent = () => {
         assignedTo: leadData.assignedTo || null,
       };
 
-      await axios.post("http://localhost:5000/api/leads", leadPayload);
+      await axios.post("https://crm.hxbindia.com/api/leads", leadPayload);
       setLeadData({
         name: "",
         contact: "",
@@ -130,7 +130,7 @@ const LeadFilterComponent = () => {
         assignedTo: leadData.assignedTo || null,
       };
 
-      await axios.put(`http://localhost:5000/api/leads/${id}`, leadPayload);
+      await axios.put(`https://crm.hxbindia.com/api/leads/${id}`, leadPayload);
       setEditingLead(null);
       setLeadData({
         name: "",
@@ -170,7 +170,7 @@ const LeadFilterComponent = () => {
   const deleteLead = async (id) => {
     setError("");
     try {
-      await axios.delete(`http://localhost:5000/api/leads/${id}`);
+      await axios.delete(`https://crm.hxbindia.com/api/leads/${id}`);
       fetchLeads();
     } catch (error) {
       setError("Error deleting lead");
@@ -198,7 +198,7 @@ const LeadFilterComponent = () => {
       if (startDate) params.startDate = formatDateToISO(startDate);
       if (endDate) params.endDate = formatDateToISO(endDate);
 
-      const res = await axios.get("http://localhost:5000/api/leads", { params });
+      const res = await axios.get("https://crm.hxbindia.com/api/leads", { params });
       const leadsWithServices = res.data.map(lead => ({
         ...lead,
         services: lead.services || []
@@ -218,7 +218,7 @@ const LeadFilterComponent = () => {
 
   const fetchUsers = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/users");
+      const res = await axios.get("https://crm.hxbindia.com/api/users");
       setUsers(res.data);
   
       // Find the logged-in user
@@ -415,7 +415,7 @@ const LeadFilterComponent = () => {
     setError("");
     try {
       const updatePromises = selectedLeads.map(leadId =>
-        axios.put(`http://localhost:5000/api/leads/${leadId}`, { assignedTo: assignTo })
+        axios.put(`https://crm.hxbindia.com/api/leads/${leadId}`, { assignedTo: assignTo })
       );
 
       await Promise.all(updatePromises);
@@ -432,7 +432,7 @@ const LeadFilterComponent = () => {
     setError("");
     try {
       const deletePromises = selectedLeads.map(leadId =>
-        axios.delete(`http://localhost:5000/api/leads/${leadId}`)
+        axios.delete(`https://crm.hxbindia.com/api/leads/${leadId}`)
       );
 
       await Promise.all(deletePromises);

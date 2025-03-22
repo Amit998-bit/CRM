@@ -20,7 +20,7 @@ const Register = () => {
 
     const fetchAdmins = async () => {
         try {
-            const response = await axios.get("http://localhost:5000/api/users/admins");
+            const response = await axios.get("https://crm.hxbindia.com/api/users/admins");
             setAdmins(response.data);
         } catch (error) {
             console.error("Error fetching admins:", error);
@@ -37,7 +37,7 @@ const Register = () => {
         setMessage("");
 
         try {
-            const response = await axios.post("http://localhost:5000/api/auth/register", user, {
+            const response = await axios.post("https://crm.hxbindia.com/api/auth/register", user, {
                 headers: { "Content-Type": "application/json" }
             });
             setMessage(response.data.message);

@@ -25,7 +25,7 @@ const LeadsList = () => {
   
       console.log("Fetching with Params:", params); // Debugging
 
-      const res = await axios.get("http://localhost:5000/api/leads", { params });
+      const res = await axios.get("https://crm.hxbindia.com/api/leads", { params });
 
       console.log("API Response:", res.data); // Debugging
       setLeads(res.data);

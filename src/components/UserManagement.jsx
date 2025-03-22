@@ -27,7 +27,7 @@ const UserManagement = () => {
     setLoading(true);
     setError("");
     try {
-      const res = await axios.get("http://localhost:5000/api/users");
+      const res = await axios.get("https://crm.hxbindia.com/api/users");
       setUsers(res.data);
     } catch (error) {
       setError("Error fetching users");
@@ -48,7 +48,7 @@ const UserManagement = () => {
   
       console.log("Final Payload to Backend:", userData); // Debugging line
   
-      await axios.post("http://localhost:5000/api/users/register", userData);
+      await axios.post("https://crm.hxbindia.com/api/users/register", userData);
       alert("User created successfully");
       setFormData({ name: "", email: "", password: "", role: "Executive", parent: [] });
       fetchUsers();
@@ -67,7 +67,7 @@ const UserManagement = () => {
         ...formData,
         parent: formData.parent.map(option => option.value), // Send only the IDs to the API
       };
-      await axios.put(`http://localhost:5000/api/users/${id}`, userData);
+      await axios.put(`https://crm.hxbindia.com/api/users/${id}`, userData);
       alert("User updated successfully");
       setEditingUser(null);
       setFormData({ name: "", email: "", password: "", role: "Executive", parent: [] });
@@ -82,7 +82,7 @@ const UserManagement = () => {
   const deleteUser = async (id) => {
     setError("");
     try {
-      await axios.delete(`http://localhost:5000/api/users/${id}`);
+      await axios.delete(`https://crm.hxbindia.com/api/users/${id}`);
       fetchUsers();
     } catch (error) {
       setError("Error deleting user");

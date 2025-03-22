@@ -30,7 +30,7 @@ const LeaveApplication = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post('http://localhost:5000/api/leaves/apply', formData);
+      const response = await axios.post('https://crm.hxbindia.com/api/leaves/apply', formData);
       setMessage('Leave applied successfully!');
       console.log(response.data);
       // Fetch the leave status after applying
@@ -44,7 +44,7 @@ const LeaveApplication = () => {
 
   const fetchLeaveStatus = async (leaveId) => {
     try {
-      const response = await axios.get(`http://localhost:5000/api/leaves/user/${userId}`);
+      const response = await axios.get(`https://crm.hxbindia.com/api/leaves/user/${userId}`);
       const leave = response.data.find(leave => leave._id === leaveId);
       if (leave) {
         setLeaveStatus(leave.status);
@@ -56,7 +56,7 @@ const LeaveApplication = () => {
 
   const fetchAllLeaveApplications = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/api/leaves');
+      const response = await axios.get('https://crm.hxbindia.com/api/leaves');
       setLeaveApplications(response.data);
     } catch (error) {
       console.error('Error fetching leave applications:', error);
@@ -65,7 +65,7 @@ const LeaveApplication = () => {
 
   const fetchUserLeaves = async () => {
     try {
-      const response = await axios.get(`http://localhost:5000/api/leaves/user/${userId}`);
+      const response = await axios.get(`https://crm.hxbindia.com/api/leaves/user/${userId}`);
       setUserLeaves(response.data);
     } catch (error) {
       console.error('Error fetching user leaves:', error);
@@ -74,7 +74,7 @@ const LeaveApplication = () => {
 
   const handleApproveReject = async (leaveId, status) => {
     try {
-      await axios.put(`http://localhost:5000/api/leaves/update/${leaveId}`, { status });
+      await axios.put(`https://crm.hxbindia.com/api/leaves/update/${leaveId}`, { status });
       fetchAllLeaveApplications();
       fetchUserLeaves();
       setMessage(`Leave ${status} successfully!`);
@@ -86,7 +86,7 @@ const LeaveApplication = () => {
 
   const fetchUserRole = async () => {
     try {
-      const response = await axios.get(`http://localhost:5000/api/users/${userId}`);
+      const response = await axios.get(`https://crm.hxbindia.com/api/users/${userId}`);
       setUserRole(response.data.role);
     } catch (error) {
       console.error('Error fetching user role:', error);
